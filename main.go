@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/skratchdot/open-golang/open"
@@ -81,26 +82,7 @@ func init() {
 
 }
 
-func edit() {
-	home, err := homedir.Dir()
-	if err != nil {
-		panic(err)
-	}
-	configFile := filepath.Join(home, ".pgr", "config.json")
-	editor := os.Getenv("EDITOR")
-	if editor != "" {
-		c := exec.Command(editor, configFile)
-		c.Stdin = os.Stdin
-		c.Stdout = os.Stdout
-		c.Stderr = os.Stderr
-		c.Run()
-	} else {
-		open.Run(configFile)
-	}
-}
-
-func main() {
-	edit()
+func update() {
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL)
 	if err != nil {
 		panic(err)
@@ -136,5 +118,33 @@ func main() {
 		v[s.ContestID+"_"+s.ProblemID] = struct{}{}
 		return true
 	}).([]AtCoderSubmission)
-	fmt.Println(len(ss))
+
+	funk.ForEach(ss, func(s AtCoderSubmission) {
+		url := fmt.Sprintf("https://atcoder.jp/contests/%s/submissions/%s", s.ContestID, strconv.Itoa(s.ID))
+
+		os.Exit(1)
+	})
+}
+
+func edit() {
+	home, err := homedir.Dir()
+	if err != nil {
+		panic(err)
+	}
+	configFile := filepath.Join(home, ".pgr", "config.json")
+	editor := os.Getenv("EDITOR")
+	if editor != "" {
+		c := exec.Command(editor, configFile)
+		c.Stdin = os.Stdin
+		c.Stdout = os.Stdout
+		c.Stderr = os.Stderr
+		c.Run()
+	} else {
+		open.Run(configFile)
+	}
+}
+
+func main() {
+	update()
+	//edit()
 }
