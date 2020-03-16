@@ -25,6 +25,10 @@ type AtCoderSubmission struct {
 	ExecutionTime int     `json:"execution_time"`
 }
 
+func init() {
+	fmt.Println("Read Config..")
+}
+
 func main() {
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL)
 	if err != nil {
@@ -61,5 +65,5 @@ func main() {
 		v[s.ContestID+"_"+s.ProblemID] = struct{}{}
 		return true
 	}).([]AtCoderSubmission)
-	fmt.Println("%d\n", len(ss))
+	fmt.Println(len(ss))
 }
