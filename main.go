@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/skratchdot/open-golang/open"
 	"github.com/thoas/go-funk"
 )
 
@@ -29,8 +31,10 @@ type AtCoderSubmission struct {
 }
 
 func isDirExist(path string) bool {
-	info, _ := os.Stat(path)
-
+	info, err := os.Stat(path)
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
 	return info.IsDir()
 }
 func isFileExist(path string) bool {
@@ -62,7 +66,7 @@ func init() {
 	if !isFileExist(configFile) {
 		//initial config
 		config := []Config{Config{"", "", "atcoder"}}
-		jsonBytes, err := json.Marshal(config)
+		jsonBytes, err := json.MarshalIndent(config, "", "\t")
 		if err != nil {
 			panic(err)
 		}
@@ -74,9 +78,29 @@ func init() {
 		defer file.Close()
 		file.WriteString(json)
 	}
+
+}
+
+func edit() {
+	home, err := homedir.Dir()
+	if err != nil {
+		panic(err)
+	}
+	configFile := filepath.Join(home, ".pgr", "config.json")
+	editor := os.Getenv("EDITOR")
+	if editor != "" {
+		c := exec.Command(editor, configFile)
+		c.Stdin = os.Stdin
+		c.Stdout = os.Stdout
+		c.Stderr = os.Stderr
+		c.Run()
+	} else {
+		open.Run(configFile)
+	}
 }
 
 func main() {
+	edit()
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL)
 	if err != nil {
 		panic(err)
