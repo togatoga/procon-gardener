@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/thoas/go-funk"
 )
 
@@ -25,8 +28,52 @@ type AtCoderSubmission struct {
 	ExecutionTime int     `json:"execution_time"`
 }
 
+func isDirExist(path string) bool {
+	info, _ := os.Stat(path)
+
+	return info.IsDir()
+}
+func isFileExist(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+type Config struct {
+	UserID         string `json:"user_id"`
+	RepositoryPath string `json:"repository_path"`
+	ServiceName    string `json:"service_name"`
+}
+
 func init() {
-	fmt.Println("Read Config..")
+
+	home, err := homedir.Dir()
+	if err != nil {
+		panic(err)
+	}
+	configDir := filepath.Join(home, ".pgr")
+	if !isDirExist(configDir) {
+		err = os.MkdirAll(configDir, 0700)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	configFile := filepath.Join(configDir, "config.json")
+	if !isFileExist(configFile) {
+		//initial config
+		config := []Config{Config{"", "", "atcoder"}}
+		jsonBytes, err := json.Marshal(config)
+		if err != nil {
+			panic(err)
+		}
+		json := string(jsonBytes)
+		file, err := os.Create(filepath.Join(configDir, "config.json"))
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		file.WriteString(json)
+	}
 }
 
 func main() {
