@@ -84,7 +84,7 @@ func init() {
 
 }
 
-func update() {
+func archive() {
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL)
 	if err != nil {
 		panic(err)
@@ -154,7 +154,7 @@ func main() {
 				Aliases: []string{"a"},
 				Usage:   "archive your AC submissions",
 				Action: func(c *cli.Context) error {
-					update()
+					archive()
 					return nil
 				},
 			},
@@ -174,6 +174,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	update()
-	//edit()
 }
