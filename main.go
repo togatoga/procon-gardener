@@ -121,7 +121,7 @@ func update() {
 
 	funk.ForEach(ss, func(s AtCoderSubmission) {
 		url := fmt.Sprintf("https://atcoder.jp/contests/%s/submissions/%s", s.ContestID, strconv.Itoa(s.ID))
-
+		fmt.Println(url)
 		os.Exit(1)
 	})
 }
@@ -145,6 +145,7 @@ func edit() {
 }
 
 func main() {
+	// app := cli.App{Name: "procon-gardener", Usage: "archive your AC submissions"}
 	update()
 	//edit()
 }
