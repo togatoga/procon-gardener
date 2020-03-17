@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -14,6 +15,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/thoas/go-funk"
+	"github.com/urfave/cli/v2"
 )
 
 const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/results?user=togatoga"
@@ -145,7 +147,33 @@ func edit() {
 }
 
 func main() {
-	// app := cli.App{Name: "procon-gardener", Usage: "archive your AC submissions"}
+	app := cli.App{Name: "procon-gardener", Usage: "archive your AC submissions",
+		Commands: []*cli.Command{
+			{
+				Name:    "archive",
+				Aliases: []string{"a"},
+				Usage:   "archive your AC submissions",
+				Action: func(c *cli.Context) error {
+					update()
+					return nil
+				},
+			},
+			{
+				Name:    "edit",
+				Aliases: []string{"e"},
+				Usage:   "edit your config file",
+				Action: func(c *cli.Context) error {
+					edit()
+					return nil
+				},
+			},
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 	update()
 	//edit()
 }
