@@ -18,7 +18,7 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
-const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/results?user=togatoga"
+const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/results?user="
 
 type AtCoderSubmission struct {
 	ID            int     `json:"id"`
@@ -87,6 +87,7 @@ func init() {
 		defer file.Close()
 		file.WriteString(json)
 	}
+
 }
 
 func archive() {
@@ -132,7 +133,9 @@ func archive() {
 		os.Exit(1)
 	})
 }
-
+func validateConfig(config Config) bool {
+	return false
+}
 func edit() {
 	home, err := homedir.Dir()
 	if err != nil {
@@ -149,6 +152,7 @@ func edit() {
 	} else {
 		open.Run(configFile)
 	}
+
 }
 
 func main() {
