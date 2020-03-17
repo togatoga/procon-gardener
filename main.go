@@ -15,7 +15,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/thoas/go-funk"
-	"github.com/urfave/cli/v2"
+	cli "github.com/urfave/cli/v2"
 )
 
 const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/results?user=togatoga"
@@ -45,10 +45,13 @@ func isFileExist(path string) bool {
 	return err == nil
 }
 
+type Service struct {
+	UserID string `json:"user_id"`
+	URL    string `json:"url"`
+}
 type Config struct {
-	UserID         string `json:"user_id"`
-	RepositoryPath string `json:"repository_path"`
-	ServiceName    string `json:"service_name"`
+	RepositoryPath string    `json:"repository_path"`
+	Services       []Service `json:"services"`
 }
 
 func init() {
@@ -68,7 +71,10 @@ func init() {
 	configFile := filepath.Join(configDir, "config.json")
 	if !isFileExist(configFile) {
 		//initial config
-		config := []Config{Config{"", "", "atcoder"}}
+		services := []Service{{UserID: "", URL: "https://atcoder.jp"}}
+
+		config := []Config{Config{RepositoryPath: "", Services: services}}
+
 		jsonBytes, err := json.MarshalIndent(config, "", "\t")
 		if err != nil {
 			panic(err)
@@ -81,7 +87,6 @@ func init() {
 		defer file.Close()
 		file.WriteString(json)
 	}
-
 }
 
 func archive() {
@@ -147,6 +152,7 @@ func edit() {
 }
 
 func main() {
+
 	app := cli.App{Name: "procon-gardener", Usage: "archive your AC submissions",
 		Commands: []*cli.Command{
 			{
@@ -163,6 +169,7 @@ func main() {
 				Aliases: []string{"e"},
 				Usage:   "edit your config file",
 				Action: func(c *cli.Context) error {
+
 					edit()
 					return nil
 				},
