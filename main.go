@@ -11,6 +11,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/skratchdot/open-golang/open"
@@ -52,6 +55,42 @@ type Service struct {
 }
 type Config struct {
 	Atcoder Service `json:"atcoder"`
+}
+
+func language_to_file_name(language string) string {
+
+	if strings.HasPrefix(language, "C++") {
+		return "Main.cpp"
+	}
+	if strings.HasPrefix(language, "Bash") {
+		return "Main.sh"
+	}
+
+	//C (GCC 5.4.1)
+	//C (Clang 3.8.0)
+	if strings.HasPrefix(language, "C (") {
+		return "Main.c"
+	}
+
+	if strings.HasPrefix(language, "C #") {
+		return "Main.cs"
+	}
+
+	if strings.HasPrefix(language, "Clojure") {
+		return "Main.clj"
+	}
+
+	if strings.HasPrefix(language, "Common Lisp") {
+		return "Main.lisp"
+	}
+
+	//D (DMD64 v2.070.1)
+	if strings.HasPrefix(language, "D (") {
+		return "Main.d"
+	}
+
+	log.Printf("Unknown ... %s", language)
+	return "Main.txt"
 }
 
 func init() {
@@ -154,14 +193,26 @@ func archive() {
 			panic(err)
 		}
 		defer resp.Body.Close()
-
-		body, err := ioutil.ReadAll(resp.Body)
+		/*html, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(html))*/
+		doc, err := goquery.NewDocumentFromReader(resp.Body)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		_ = body
-		//fmt.Printf("%v", string(body))
+		log.Println("Parsing...")
+		/*html, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println(string(html))*/
+		language := s.Language
+		doc.Find(".linenums").Each(func(i int, s *goquery.Selection) {
+			code := s.Text()
+			if code == "" {
+				log.Print("Empty string...")
+				return
+			}
+			fmt.Println(code)
+			fmt.Println(language)
+		})
 		os.Exit(1)
 	})
 }
