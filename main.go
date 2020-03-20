@@ -18,6 +18,7 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
+const APP_NAME = "procon-gardener"
 const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/results?user="
 
 type AtCoderSubmission struct {
@@ -46,12 +47,12 @@ func isFileExist(path string) bool {
 }
 
 type Service struct {
-	UserID string `json:"user_id"`
-	URL    string `json:"url"`
+	RepositoryPath string `json:"repository_path"`
+	UserID         string `json:"user_id"`
+	URL            string `json:"url"`
 }
 type Config struct {
-	RepositoryPath string    `json:"repository_path"`
-	Services       []Service `json:"services"`
+	Services []Service `json:"services"`
 }
 
 func init() {
@@ -60,7 +61,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	configDir := filepath.Join(home, ".pgr")
+	configDir := filepath.Join(home, "."+APP_NAME)
 	if !isDirExist(configDir) {
 		err = os.MkdirAll(configDir, 0700)
 		if err != nil {
@@ -71,9 +72,9 @@ func init() {
 	configFile := filepath.Join(configDir, "config.json")
 	if !isFileExist(configFile) {
 		//initial config
-		services := []Service{{UserID: "", URL: "https://atcoder.jp"}}
+		services := []Service{{RepositoryPath: "", UserID: "", URL: "https://atcoder.jp"}}
 
-		config := []Config{Config{RepositoryPath: "", Services: services}}
+		config := Config{Services: services}
 
 		jsonBytes, err := json.MarshalIndent(config, "", "\t")
 		if err != nil {
@@ -90,7 +91,28 @@ func init() {
 
 }
 
+func load_config() Config {
+	home, err := homedir.Dir()
+	if err != nil {
+		panic(err)
+	}
+	configDir := filepath.Join(home, "."+APP_NAME)
+	configFile := filepath.Join(configDir, "config.json")
+	bytes, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		panic(err)
+	}
+	var config Config
+	if err = json.Unmarshal(bytes, &config); err != nil {
+
+		panic(err)
+	}
+	return config
+}
+
 func archive() {
+	config := load_config()
+	fmt.Println("%v\n", config)
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL)
 	if err != nil {
 		panic(err)
@@ -129,7 +151,13 @@ func archive() {
 
 	funk.ForEach(ss, func(s AtCoderSubmission) {
 		url := fmt.Sprintf("https://atcoder.jp/contests/%s/submissions/%s", s.ContestID, strconv.Itoa(s.ID))
-		fmt.Println(url)
+		resp, err := http.Get(url)
+		if err != nil {
+			panic(err)
+		}
+		defer resp.Body.Close()
+		html := resp.Body
+		fmt.Println(html)
 		os.Exit(1)
 	})
 }
@@ -141,7 +169,7 @@ func edit() {
 	if err != nil {
 		panic(err)
 	}
-	configFile := filepath.Join(home, ".pgr", "config.json")
+	configFile := filepath.Join(home, "."+APP_NAME, "config.json")
 	editor := os.Getenv("EDITOR")
 	if editor != "" {
 		c := exec.Command(editor, configFile)
