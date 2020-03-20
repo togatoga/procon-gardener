@@ -49,10 +49,9 @@ func isFileExist(path string) bool {
 type Service struct {
 	RepositoryPath string `json:"repository_path"`
 	UserID         string `json:"user_id"`
-	URL            string `json:"url"`
 }
 type Config struct {
-	Services []Service `json:"services"`
+	Atcoder Service `json:"atcoder"`
 }
 
 func init() {
@@ -72,9 +71,9 @@ func init() {
 	configFile := filepath.Join(configDir, "config.json")
 	if !isFileExist(configFile) {
 		//initial config
-		services := []Service{{RepositoryPath: "", UserID: "", URL: "https://atcoder.jp"}}
+		atcoder := Service{RepositoryPath: "", UserID: ""}
 
-		config := Config{Services: services}
+		config := Config{Atcoder: atcoder}
 
 		jsonBytes, err := json.MarshalIndent(config, "", "\t")
 		if err != nil {
@@ -88,7 +87,6 @@ func init() {
 		defer file.Close()
 		file.WriteString(json)
 	}
-
 }
 
 func load_config() Config {
@@ -112,7 +110,7 @@ func load_config() Config {
 
 func archive() {
 	config := load_config()
-	fmt.Println("%v\n", config)
+	fmt.Printf("%v", config)
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL)
 	if err != nil {
 		panic(err)
