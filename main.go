@@ -110,8 +110,7 @@ func load_config() Config {
 
 func archive() {
 	config := load_config()
-	fmt.Printf("%v", config)
-	resp, err := http.Get(ATCODER_API_SUBMISSION_URL)
+	resp, err := http.Get(ATCODER_API_SUBMISSION_URL + config.Atcoder.UserID)
 	if err != nil {
 		panic(err)
 	}
@@ -149,17 +148,25 @@ func archive() {
 
 	funk.ForEach(ss, func(s AtCoderSubmission) {
 		url := fmt.Sprintf("https://atcoder.jp/contests/%s/submissions/%s", s.ContestID, strconv.Itoa(s.ID))
+		log.Printf("Requesting... %s", url)
 		resp, err := http.Get(url)
 		if err != nil {
 			panic(err)
 		}
 		defer resp.Body.Close()
-		html := resp.Body
-		fmt.Println(html)
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		_ = body
+		//fmt.Printf("%v", string(body))
 		os.Exit(1)
 	})
 }
 func validateConfig(config Config) bool {
+	//TODO check path
 	return false
 }
 func edit() {
