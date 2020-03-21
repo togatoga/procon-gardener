@@ -56,6 +56,7 @@ func isFileExist(path string) bool {
 type Service struct {
 	RepositoryPath string `json:"repository_path"`
 	UserID         string `json:"user_id"`
+	UserEmail      string `json:"user_email"`
 }
 type Config struct {
 	Atcoder Service `json:"atcoder"`
@@ -434,6 +435,7 @@ func archiveCmd() {
 			return
 		}
 		userID := s.UserID
+		userEmail := config.Atcoder.UserEmail
 		language := s.Language
 		contestID := s.ContestID
 		problemID := s.ProblemID
@@ -489,8 +491,9 @@ func archiveCmd() {
 			message := fmt.Sprintf("[AC] %s %s", contestID, problemID)
 			_, err = w.Commit(message, &git.CommitOptions{
 				Author: &object.Signature{
-					Name: userID,
-					When: time.Unix(epochSecond, 0),
+					Name:  userID,
+					Email: userEmail,
+					When:  time.Unix(epochSecond, 0),
 				},
 			})
 			if err != nil {
