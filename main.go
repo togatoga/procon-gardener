@@ -300,7 +300,7 @@ func loadConfig() Config {
 	return config
 }
 
-func archiveFile(code, fileName, path string) error {
+func archiveFile(code, fileName, path string, submission AtCoderSubmission) error {
 	if err := os.MkdirAll(path, 0700); err != nil {
 		return err
 	}
@@ -311,6 +311,21 @@ func archiveFile(code, fileName, path string) error {
 	}
 	defer file.Close()
 	file.WriteString(code)
+
+	{
+		//save submission json file
+		jsonBytes, err := json.MarshalIndent(submission, "", "\t")
+		if err != nil {
+			panic(err)
+		}
+		json := string(jsonBytes)
+		file, err := os.Create(filepath.Join(path, "submission.json"))
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+		file.WriteString(json)
+	}
 	return nil
 }
 
@@ -336,6 +351,33 @@ func archiveCmd() {
 		return s.Result == "AC"
 	}).([]AtCoderSubmission)
 
+	//skip the already archived code
+	archivedKeys := map[string]struct{}{}
+	filepath.Walk(config.Atcoder.RepositoryPath, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() && strings.HasSuffix(path, "submission.json") {
+			bytes, err := ioutil.ReadFile(path)
+			if err != nil {
+				panic(err)
+			}
+			var submission AtCoderSubmission
+			if err = json.Unmarshal(bytes, &submission); err != nil {
+				log.Println(err)
+				return err
+			}
+			key := submission.ContestID + "_" + submission.ProblemID
+			archivedKeys[key] = struct{}{}
+		}
+		return nil
+	})
+	ss = funk.Filter(ss, func(s AtCoderSubmission) bool {
+		key := s.ContestID + "_" + s.ProblemID
+		_, ok := archivedKeys[key]
+		if ok {
+			return false
+		}
+		return true
+	}).([]AtCoderSubmission)
+
 	//rev sort by EpochSecond
 	sort.Slice(ss, func(i, j int) bool {
 		return ss[i].EpochSecond > ss[j].EpochSecond
@@ -351,7 +393,9 @@ func archiveCmd() {
 		v[s.ContestID+"_"+s.ProblemID] = struct{}{}
 		return true
 	}).([]AtCoderSubmission)
+
 	startTime := time.Now()
+	log.Printf("Archiving %d code...", len(ss))
 	funk.ForEach(ss, func(s AtCoderSubmission) {
 		url := fmt.Sprintf("https://atcoder.jp/contests/%s/submissions/%s", s.ContestID, strconv.Itoa(s.ID))
 
@@ -377,8 +421,8 @@ func archiveCmd() {
 		contestID := s.ContestID
 		problemID := s.ProblemID
 
-		doc.Find(".linenums").Each(func(i int, s *goquery.Selection) {
-			code := s.Text()
+		doc.Find(".linenums").Each(func(i int, gs *goquery.Selection) {
+			code := gs.Text()
 			if code == "" {
 				log.Print("Empty string...")
 				return
@@ -386,7 +430,7 @@ func archiveCmd() {
 			fileName := languageToFileName(language)
 			archiveDirPath := filepath.Join(config.Atcoder.RepositoryPath, contestID, problemID)
 
-			if err = archiveFile(code, fileName, archiveDirPath); err != nil {
+			if err = archiveFile(code, fileName, archiveDirPath, s); err != nil {
 				log.Println("Fail to archive the code at", filepath.Join(archiveDirPath, fileName))
 				return
 			}
