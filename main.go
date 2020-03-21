@@ -14,6 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+
 	"github.com/PuerkitoBio/goquery"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -27,7 +30,7 @@ const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/res
 
 type AtCoderSubmission struct {
 	ID            int     `json:"id"`
-	EpochSecond   int     `json:"epoch_second"`
+	EpochSecond   int64   `json:"epoch_second"`
 	ProblemID     string  `json:"problem_id"`
 	ContestID     string  `json:"contest_id"`
 	UserID        string  `json:"user_id"`
@@ -417,10 +420,11 @@ func archiveCmd() {
 			log.Fatal(err)
 			return
 		}
+		userID := s.UserID
 		language := s.Language
 		contestID := s.ContestID
 		problemID := s.ProblemID
-
+		epochSecond := s.EpochSecond
 		doc.Find(".linenums").Each(func(i int, gs *goquery.Selection) {
 			code := gs.Text()
 			if code == "" {
@@ -428,13 +432,58 @@ func archiveCmd() {
 				return
 			}
 			fileName := languageToFileName(language)
-			archiveDirPath := filepath.Join(config.Atcoder.RepositoryPath, contestID, problemID)
+			archiveDirPath := filepath.Join(config.Atcoder.RepositoryPath, "atcoder.jp", contestID, problemID)
 
 			if err = archiveFile(code, fileName, archiveDirPath, s); err != nil {
 				log.Println("Fail to archive the code at", filepath.Join(archiveDirPath, fileName))
 				return
 			}
 			log.Println("Success archive the code at ", filepath.Join(archiveDirPath, fileName))
+			//If the archive repo is the git repo
+			//git add and git commit
+			if !isDirExist(filepath.Join(config.Atcoder.RepositoryPath, ".git")) {
+				return
+			}
+
+			r, err := git.PlainOpen(config.Atcoder.RepositoryPath)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			w, err := r.Worktree()
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			//add source code
+			fmt.Println(fileName)
+			dirPath := filepath.Join("atcoder.jp", contestID, problemID)
+			_, err = w.Add(filepath.Join(dirPath, fileName))
+			if err != nil {
+				log.Println(err)
+
+				return
+			}
+
+			//add submission json
+			_, err = w.Add(filepath.Join(dirPath, "submission.json"))
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			message := fmt.Sprintf("[AC] %s %s", contestID, problemID)
+			_, err = w.Commit(message, &git.CommitOptions{
+				Author: &object.Signature{
+					Name: userID,
+					When: time.Unix(epochSecond, 0),
+				},
+			})
+			if err != nil {
+				log.Println(err)
+				return
+			}
 			return
 		})
 	})
