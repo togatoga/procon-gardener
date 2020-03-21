@@ -58,7 +58,11 @@ type Config struct {
 }
 
 func language_to_file_name(language string) string {
-
+	//e.g C++14 (GCC 5.4.1)
+	//C++14
+	language = strings.Split(language, "(")[0]
+	//remove extra last whitespace
+	language = language[:len(language)-1]
 	if strings.HasPrefix(language, "C++") {
 		return "Main.cpp"
 	}
@@ -68,15 +72,15 @@ func language_to_file_name(language string) string {
 
 	//C (GCC 5.4.1)
 	//C (Clang 3.8.0)
-	if strings.HasPrefix(language, "C (") {
+	if language == "C" {
 		return "Main.c"
 	}
 
-	if strings.HasPrefix(language, "C #") {
+	if language == "C#" {
 		return "Main.cs"
 	}
 
-	if strings.HasPrefix(language, "Clojure") {
+	if language == "Clojure" {
 		return "Main.clj"
 	}
 
@@ -85,8 +89,154 @@ func language_to_file_name(language string) string {
 	}
 
 	//D (DMD64 v2.070.1)
-	if strings.HasPrefix(language, "D (") {
+	if language == "D" {
 		return "Main.d"
+	}
+
+	if language == "Fortran" {
+		return "Main.f08"
+	}
+
+	if language == "Go" {
+		return "Main.go"
+	}
+
+	if language == "Haskell" {
+		return "Main.hs"
+	}
+
+	if language == "JavaScript" {
+		return "Main.js"
+	}
+	if language == "Java" {
+		return "Main.java"
+	}
+	if language == "OCaml" {
+		return "Main.ml"
+	}
+
+	if language == "Pascal" {
+		return "Main.pas"
+	}
+
+	if language == "Perl" {
+		return "Main.pl"
+	}
+
+	if language == "PHP" {
+		return "Main.php"
+	}
+
+	if strings.HasPrefix(language, "Python") {
+		return "Main.py"
+	}
+
+	if language == "Ruby" {
+		return "Main.rb"
+	}
+
+	if language == "Scala" {
+		return "Main.scala"
+	}
+
+	if language == "Scheme" {
+		return "Main.scm"
+	}
+
+	if language == "Main.txt" {
+		return "Main.txt"
+	}
+
+	if language == "Visual Basic" {
+		return "Main.vb"
+	}
+
+	if language == "Objective-C" {
+		return "Main.m"
+	}
+
+	if language == "Swift" {
+		return "Main.swift"
+	}
+
+	if language == "Rust" {
+		return "Main.rs"
+	}
+
+	if language == "Sed" {
+		return "Main.sed"
+	}
+
+	if language == "Awk" {
+		return "Main.awk"
+	}
+
+	if language == "Brainfuck" {
+		return "Main.bf"
+	}
+
+	if language == "Standard ML" {
+		return "Main.sml"
+	}
+
+	if strings.HasPrefix(language, "PyPy") {
+		return "Main.py"
+	}
+
+	if language == "Crystal" {
+		return "Main.cr"
+	}
+
+	if language == "F#" {
+		return "Main.fs"
+	}
+
+	if language == "Unlambda" {
+		return "Main.unl"
+	}
+
+	if language == "Lua" {
+		return "Main.lua"
+	}
+
+	if language == "LuaJIT" {
+		return "Main.lua"
+	}
+
+	if language == "MoonScript" {
+		return "Main.moon"
+	}
+
+	if language == "Ceylon" {
+		return "Main.ceylon"
+	}
+
+	if language == "Julia" {
+		return "Main.jl"
+	}
+
+	if language == "Octave" {
+		return "Main.m"
+	}
+
+	if language == "Nim" {
+		return "Main.nim"
+	}
+
+	if language == "TypeScript" {
+		return "Main.ts"
+	}
+
+	if language == "Perl6" {
+		return "Main.p6"
+	}
+
+	if language == "Kotlin" {
+		return "Main.kt"
+	}
+
+	if language == "COBOL" {
+		return "Main.cob"
 	}
 
 	log.Printf("Unknown ... %s", language)
