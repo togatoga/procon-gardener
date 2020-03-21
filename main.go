@@ -366,16 +366,11 @@ func archive() {
 		}
 		defer resp.Body.Close()
 
-		/*html, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(html))*/
 		doc, err := goquery.NewDocumentFromReader(resp.Body)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		log.Println("Parsing...")
-		/*html, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(html))*/
 		language := s.Language
 		contestID := s.ContestID
 		problemID := s.ProblemID
