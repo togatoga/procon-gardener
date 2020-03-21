@@ -244,8 +244,9 @@ func languageToFileName(language string) string {
 	return "Main.txt"
 }
 
-func init_cmd() {
+func initCmd(strict bool) {
 
+	log.Println("Initialize your config...")
 	home, err := homedir.Dir()
 	if err != nil {
 		panic(err)
@@ -259,7 +260,7 @@ func init_cmd() {
 	}
 
 	configFile := filepath.Join(configDir, "config.json")
-	if !isFileExist(configFile) {
+	if strict || !isFileExist(configFile) {
 		//initial config
 		atcoder := Service{RepositoryPath: "", UserID: ""}
 
@@ -277,9 +278,10 @@ func init_cmd() {
 		defer file.Close()
 		file.WriteString(json)
 	}
+	log.Println("Initialized your config at ", configFile)
 }
 
-func load_config() Config {
+func loadConfig() Config {
 	home, err := homedir.Dir()
 	if err != nil {
 		panic(err)
@@ -312,8 +314,8 @@ func archiveFile(code, fileName, path string) error {
 	return nil
 }
 
-func archive_cmd() {
-	config := load_config()
+func archiveCmd() {
+	config := loadConfig()
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL + config.Atcoder.UserID)
 	if err != nil {
 		panic(err)
@@ -397,12 +399,18 @@ func validateConfig(config Config) bool {
 	//TODO check path
 	return false
 }
-func edit_cmd() {
+func editCmd() {
+
 	home, err := homedir.Dir()
 	if err != nil {
 		panic(err)
 	}
 	configFile := filepath.Join(home, "."+APP_NAME, "config.json")
+	//Config file not found, force to run an init cmd
+	if !isFileExist(configFile) {
+		initCmd(true)
+	}
+
 	editor := os.Getenv("EDITOR")
 	if editor != "" {
 		c := exec.Command(editor, configFile)
@@ -425,7 +433,7 @@ func main() {
 				Aliases: []string{"a"},
 				Usage:   "archive your AC submissions",
 				Action: func(c *cli.Context) error {
-					archive_cmd()
+					archiveCmd()
 					return nil
 				},
 			},
@@ -434,7 +442,7 @@ func main() {
 				Aliases: []string{"i"},
 				Usage:   "initialized your config",
 				Action: func(c *cli.Context) error {
-					init_cmd()
+					initCmd(true)
 					return nil
 				},
 			},
@@ -443,7 +451,7 @@ func main() {
 				Aliases: []string{"e"},
 				Usage:   "edit your config file",
 				Action: func(c *cli.Context) error {
-					edit_cmd()
+					editCmd()
 					return nil
 				},
 			},
