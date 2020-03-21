@@ -547,7 +547,7 @@ func main() {
 			{
 				Name:    "init",
 				Aliases: []string{"i"},
-				Usage:   "initialized your config",
+				Usage:   "initialize your config",
 				Action: func(c *cli.Context) error {
 					initCmd(true)
 					return nil
