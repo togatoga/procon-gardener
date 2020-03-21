@@ -252,13 +252,15 @@ func initCmd(strict bool) {
 	log.Println("Initialize your config...")
 	home, err := homedir.Dir()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 	configDir := filepath.Join(home, "."+APP_NAME)
 	if !isDirExist(configDir) {
 		err = os.MkdirAll(configDir, 0700)
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			return
 		}
 	}
 
@@ -271,12 +273,14 @@ func initCmd(strict bool) {
 
 		jsonBytes, err := json.MarshalIndent(config, "", "\t")
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			return
 		}
 		json := string(jsonBytes)
 		file, err := os.Create(filepath.Join(configDir, "config.json"))
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			return
 		}
 		defer file.Close()
 		file.WriteString(json)
@@ -284,23 +288,23 @@ func initCmd(strict bool) {
 	log.Println("Initialized your config at ", configFile)
 }
 
-func loadConfig() Config {
+func loadConfig() (*Config, error) {
 	home, err := homedir.Dir()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	configDir := filepath.Join(home, "."+APP_NAME)
 	configFile := filepath.Join(configDir, "config.json")
 	bytes, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	var config Config
 	if err = json.Unmarshal(bytes, &config); err != nil {
-
-		panic(err)
+		log.Println(err)
+		return nil, err
 	}
-	return config
+	return &config, nil
 }
 
 func archiveFile(code, fileName, path string, submission AtCoderSubmission) error {
@@ -319,12 +323,12 @@ func archiveFile(code, fileName, path string, submission AtCoderSubmission) erro
 		//save submission json file
 		jsonBytes, err := json.MarshalIndent(submission, "", "\t")
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 		json := string(jsonBytes)
 		file, err := os.Create(filepath.Join(path, "submission.json"))
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 		defer file.Close()
 		file.WriteString(json)
@@ -333,20 +337,27 @@ func archiveFile(code, fileName, path string, submission AtCoderSubmission) erro
 }
 
 func archiveCmd() {
-	config := loadConfig()
+	config, err := loadConfig()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL + config.Atcoder.UserID)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 	var ss []AtCoderSubmission
 	err = json.Unmarshal(bytes, &ss)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 
 	//only ac
@@ -360,7 +371,8 @@ func archiveCmd() {
 		if !info.IsDir() && strings.HasSuffix(path, "submission.json") {
 			bytes, err := ioutil.ReadFile(path)
 			if err != nil {
-				panic(err)
+				log.Println(err)
+				return err
 			}
 			var submission AtCoderSubmission
 			if err = json.Unmarshal(bytes, &submission); err != nil {
@@ -409,15 +421,16 @@ func archiveCmd() {
 			time.Sleep(time.Millisecond * sleepTime)
 		}
 		resp, err := http.Get(url)
+		defer resp.Body.Close()
 		startTime = time.Now()
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			return
 		}
-		defer resp.Body.Close()
 
 		doc, err := goquery.NewDocumentFromReader(resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 			return
 		}
 		userID := s.UserID
@@ -496,7 +509,8 @@ func editCmd() {
 
 	home, err := homedir.Dir()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 	configFile := filepath.Join(home, "."+APP_NAME, "config.json")
 	//Config file not found, force to run an init cmd
