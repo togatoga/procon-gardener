@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -57,7 +58,7 @@ type Config struct {
 	Atcoder Service `json:"atcoder"`
 }
 
-func language_to_file_name(language string) string {
+func languageToFileName(language string) string {
 	//e.g C++14 (GCC 5.4.1)
 	//C++14
 	language = strings.Split(language, "(")[0]
@@ -297,6 +298,20 @@ func load_config() Config {
 	return config
 }
 
+func archiveFile(code, fileName, path string) error {
+	if err := os.MkdirAll(path, 0700); err != nil {
+		return err
+	}
+	filePath := filepath.Join(path, fileName)
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	file.WriteString(code)
+	return nil
+}
+
 func archive() {
 	config := load_config()
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL + config.Atcoder.UserID)
@@ -334,15 +349,23 @@ func archive() {
 		v[s.ContestID+"_"+s.ProblemID] = struct{}{}
 		return true
 	}).([]AtCoderSubmission)
-
+	startTime := time.Now()
 	funk.ForEach(ss, func(s AtCoderSubmission) {
 		url := fmt.Sprintf("https://atcoder.jp/contests/%s/submissions/%s", s.ContestID, strconv.Itoa(s.ID))
+
 		log.Printf("Requesting... %s", url)
+		elapsedTime := time.Now().Sub(startTime)
+		if elapsedTime.Milliseconds() < 800 {
+			sleepTime := time.Duration(800 - elapsedTime.Milliseconds())
+			time.Sleep(time.Millisecond * sleepTime)
+		}
 		resp, err := http.Get(url)
+		startTime = time.Now()
 		if err != nil {
 			panic(err)
 		}
 		defer resp.Body.Close()
+
 		/*html, _ := ioutil.ReadAll(resp.Body)
 		fmt.Println(string(html))*/
 		doc, err := goquery.NewDocumentFromReader(resp.Body)
@@ -354,16 +377,25 @@ func archive() {
 		/*html, _ := ioutil.ReadAll(resp.Body)
 		fmt.Println(string(html))*/
 		language := s.Language
+		contestID := s.ContestID
+		problemID := s.ProblemID
+
 		doc.Find(".linenums").Each(func(i int, s *goquery.Selection) {
 			code := s.Text()
 			if code == "" {
 				log.Print("Empty string...")
 				return
 			}
-			fmt.Println(code)
-			fmt.Println(language)
+			fileName := languageToFileName(language)
+			archiveDirPath := filepath.Join(config.Atcoder.RepositoryPath, contestID, problemID)
+
+			if err = archiveFile(code, fileName, archiveDirPath); err != nil {
+				log.Println("Fail to archive the code", filepath.Join(archiveDirPath, fileName))
+				return
+			}
+			log.Println("Success!! archive the code", filepath.Join(archiveDirPath, fileName))
+			return
 		})
-		os.Exit(1)
 	})
 }
 func validateConfig(config Config) bool {
