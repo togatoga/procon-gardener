@@ -244,7 +244,7 @@ func languageToFileName(language string) string {
 	return "Main.txt"
 }
 
-func init() {
+func init_cmd() {
 
 	home, err := homedir.Dir()
 	if err != nil {
@@ -312,7 +312,7 @@ func archiveFile(code, fileName, path string) error {
 	return nil
 }
 
-func archive() {
+func archive_cmd() {
 	config := load_config()
 	resp, err := http.Get(ATCODER_API_SUBMISSION_URL + config.Atcoder.UserID)
 	if err != nil {
@@ -385,10 +385,10 @@ func archive() {
 			archiveDirPath := filepath.Join(config.Atcoder.RepositoryPath, contestID, problemID)
 
 			if err = archiveFile(code, fileName, archiveDirPath); err != nil {
-				log.Println("Fail to archive the code", filepath.Join(archiveDirPath, fileName))
+				log.Println("Fail to archive the code at", filepath.Join(archiveDirPath, fileName))
 				return
 			}
-			log.Println("Success!! archive the code", filepath.Join(archiveDirPath, fileName))
+			log.Println("Success archive the code at ", filepath.Join(archiveDirPath, fileName))
 			return
 		})
 	})
@@ -397,7 +397,7 @@ func validateConfig(config Config) bool {
 	//TODO check path
 	return false
 }
-func edit() {
+func edit_cmd() {
 	home, err := homedir.Dir()
 	if err != nil {
 		panic(err)
@@ -425,7 +425,16 @@ func main() {
 				Aliases: []string{"a"},
 				Usage:   "archive your AC submissions",
 				Action: func(c *cli.Context) error {
-					archive()
+					archive_cmd()
+					return nil
+				},
+			},
+			{
+				Name:    "init",
+				Aliases: []string{"i"},
+				Usage:   "initialized your config",
+				Action: func(c *cli.Context) error {
+					init_cmd()
 					return nil
 				},
 			},
@@ -434,8 +443,7 @@ func main() {
 				Aliases: []string{"e"},
 				Usage:   "edit your config file",
 				Action: func(c *cli.Context) error {
-
-					edit()
+					edit_cmd()
 					return nil
 				},
 			},
