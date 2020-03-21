@@ -414,7 +414,7 @@ func archiveCmd() {
 	funk.ForEach(ss, func(s AtCoderSubmission) {
 		url := fmt.Sprintf("https://atcoder.jp/contests/%s/submissions/%s", s.ContestID, strconv.Itoa(s.ID))
 
-		log.Printf("Requesting... %s", url)
+		//log.Printf("Requesting... %s", url)
 		elapsedTime := time.Now().Sub(startTime)
 		if elapsedTime.Milliseconds() < 800 {
 			sleepTime := time.Duration(800 - elapsedTime.Milliseconds())
@@ -451,7 +451,7 @@ func archiveCmd() {
 				log.Println("Fail to archive the code at", filepath.Join(archiveDirPath, fileName))
 				return
 			}
-			log.Println("Success archive the code at ", filepath.Join(archiveDirPath, fileName))
+			log.Println("archived the code at ", filepath.Join(archiveDirPath, fileName))
 			//If the archive repo is the git repo
 			//git add and git commit
 			if !isDirExist(filepath.Join(config.Atcoder.RepositoryPath, ".git")) {
