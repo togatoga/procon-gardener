@@ -59,7 +59,7 @@ Windowsは動作確認してません。
 3. ソースコードのアーカイブ
 
 `procon-gardener archive`を実行すれば自動的にファイルがアーカイブされます。
-AtCoderへの負荷対策のため1提出につき1秒sleepを行っています、AC数が多い人はしばらくお待ちぐださい。  
+AtCoderへの負荷対策のため1提出につき1.5秒sleepを行っています、AC数が多い人はしばらくお待ちぐださい。  
 
 ```
 % procon-gardener archive                                 
