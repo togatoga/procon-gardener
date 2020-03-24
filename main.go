@@ -417,8 +417,8 @@ func archiveCmd() {
 
 		//log.Printf("Requesting... %s", url)
 		elapsedTime := time.Now().Sub(startTime)
-		if elapsedTime.Milliseconds() < 1000 {
-			sleepTime := time.Duration(1000 - elapsedTime.Milliseconds())
+		if elapsedTime.Milliseconds() < 1500 {
+			sleepTime := time.Duration(1500 - elapsedTime.Milliseconds())
 			time.Sleep(time.Millisecond * sleepTime)
 		}
 		resp, err := http.Get(url)
