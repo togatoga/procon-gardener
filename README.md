@@ -4,9 +4,9 @@
 提出したACしたコードを自動的に取得してローカルのディレクトリに保存するコマンドラインツールです。
 
 ### インストール方法
-インストールするにはGoが必要です。
+インストールするにはGo(`>= 1.18`)が必要です。
 ```
-go get github.com/togatoga/procon-gardener
+go install github.com/togatoga/procon-gardener@latest
 ```
 
 ### サポート環境
