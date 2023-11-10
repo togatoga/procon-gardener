@@ -440,7 +440,7 @@ func archiveCmd() {
 		contestID := s.ContestID
 		problemID := s.ProblemID
 		epochSecond := s.EpochSecond
-		doc.Find(".linenums").Each(func(i int, gs *goquery.Selection) {
+		doc.Find("#submission-code").Each(func(i int, gs *goquery.Selection) {
 			code := gs.Text()
 			if code == "" {
 				log.Print("Empty string...")
