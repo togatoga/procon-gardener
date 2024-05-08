@@ -26,7 +26,7 @@ import (
 )
 
 const APP_NAME = "procon-gardener"
-const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/results?user="
+const ATCODER_API_SUBMISSION_URL = "https://kenkoooo.com/atcoder/atcoder-api/v3/user/submissions?user="
 
 type AtCoderSubmission struct {
 	ID            int     `json:"id"`
@@ -343,7 +343,7 @@ func archiveCmd() {
 		log.Println(err)
 		return
 	}
-	resp, err := http.Get(ATCODER_API_SUBMISSION_URL + config.Atcoder.UserID)
+	resp, err := http.Get(ATCODER_API_SUBMISSION_URL + config.Atcoder.UserID + "&from_second=0")
 	if err != nil {
 		log.Println(err)
 		return
