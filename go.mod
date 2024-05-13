@@ -1,4 +1,4 @@
-module github.com/togatoga/procon-gardener
+module github.com/hokkey621/procon-gardener
 
 go 1.18
 
