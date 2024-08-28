@@ -51,7 +51,7 @@ Windowsは動作確認してません。
 	"atcoder": {
 		"repository_path":"/home/togatoga/src/github.com/togatoga/procon-archive",
 		"user_id": "togatoga",
-		"user_email": "togasakitogatoga+github@gmail.com"
+		"user_email": "hogehoge@gmail.com"
 	}
 }
 ```
